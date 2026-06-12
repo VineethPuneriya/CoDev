@@ -1,10 +1,18 @@
 import { useRef, useEffect } from 'react';
 import { Terminal, ChevronDown, ChevronUp, XCircle, Loader2, CheckCircle2, Trash2 } from 'lucide-react';
 
+/**
+ * Console Panel Component.
+ * Displays the standard output (stdout) and standard error (stderr) when a user
+ * executes code via the execution backend. It supports auto-scrolling, clear functionality,
+ * and visual status indicators (running, success, error).
+ */
 export default function ConsolePanel({ isOpen, onToggle, output, isError, isRunning, onClear, theme }) {
   const outputRef = useRef(null);
   const isLight = theme === 'light';
 
+  // Automatically scroll the terminal output to the bottom whenever new output arrives
+  // or when the execution state changes.
   useEffect(() => {
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;

@@ -14,6 +14,12 @@ const prisma = new PrismaClient({ adapter });
 
 const router = express.Router({ mergeParams: true });
 
+/**
+ * Git Integration Routes.
+ * Simulates a standard Git workflow by syncing DB-stored files to a temporary
+ * disk directory and executing standard Git CLI commands.
+ */
+
 const verifyJwt = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
@@ -29,6 +35,11 @@ const verifyJwt = (req, res, next) => {
 
 router.use(verifyJwt);
 
+/**
+ * Helper: Synchronizes database file records to a temporary disk directory.
+ * Initializes a Git repository if it doesn't exist. This is required because
+ * native Git commands need actual files on a file system.
+ */
 async function syncDbToDisk(projectId) {
   const projectDir = path.join(os.tmpdir(), `codev_project_${projectId}`);
   if (!fs.existsSync(projectDir)) {
@@ -81,6 +92,9 @@ const execGit = (cmd, cwd) => {
   });
 };
 
+/**
+ * Retrieves the current working tree status (`git status -s`).
+ */
 router.get('/:id/git/status', async (req, res) => {
   try {
     const cwd = await syncDbToDisk(req.params.id);

@@ -9,6 +9,10 @@ const executeRoutes = require('./routes/executeRoutes');
 const gitRoutes = require('./routes/gitRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 
+/**
+ * Main Express Application and HTTP Server Initialization.
+ * Sets up the REST API routes and configures Socket.IO for real-time features.
+ */
 const app = express();
 const httpServer = http.createServer(app);
 
@@ -28,6 +32,14 @@ app.use('/projects', gitRoutes);
 app.use('/api/execute', executeRoutes);
 app.use('/projects', aiRoutes);
 
+/**
+ * Socket.IO Event Handlers.
+ * Manages WebSocket connections for:
+ * - Real-time Collaborative Editing (Yjs editor-update)
+ * - Architecture Canvas synchronization (canvas-update)
+ * - Live Chat (chat_message)
+ * - WebRTC Signaling for Video Rooms (offer, answer, ice candidates)
+ */
 io.on('connection', (socket) => {
   console.log(`User connected with socket ID: ${socket.id}`);
 

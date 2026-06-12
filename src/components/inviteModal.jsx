@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, UserPlus, Mail, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
+/**
+ * Invite Modal Component.
+ * Allows users to invite other collaborators to their workspace via email.
+ */
 export default function InviteModal({ isOpen, onClose, workspaceId, token }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(null);
@@ -22,6 +26,11 @@ export default function InviteModal({ isOpen, onClose, workspaceId, token }) {
     };
   }, [isOpen]);
 
+  /**
+   * Handles the invitation submission process.
+   * Validates the input, sends the invite request to the backend, and displays
+   * success or error feedback to the user.
+   */
   const handleInvite = async () => {
     const trimmed = email.trim();
     if (!trimmed) return;

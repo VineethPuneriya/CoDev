@@ -8,6 +8,11 @@ const ICE_SERVERS = {
   ],
 };
 
+/**
+ * Video Room (War Room) Component.
+ * Provides real-time video, audio, and screen sharing using WebRTC.
+ * It manages a mesh network where each participant connects to every other participant via RTCPeerConnections.
+ */
 export default function VideoRoom({ socket, workspaceId, currentUser, onLeave }) {
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -21,6 +26,10 @@ export default function VideoRoom({ socket, workspaceId, currentUser, onLeave })
   const [position, setPosition] = useState({ top: 80, left: window.innerWidth - 420 });
   const [isDragging, setIsDragging] = useState(false);
 
+  /**
+   * Initializes a new RTCPeerConnection for a remote peer.
+   * Attaches local media tracks to the connection, and sets up ICE candidate gathering and remote track handling.
+   */
   const createPeerConnection = useCallback((peerId) => {
     if (peerConnectionsRef.current[peerId]) {
       peerConnectionsRef.current[peerId].close();
@@ -107,6 +116,7 @@ export default function VideoRoom({ socket, workspaceId, currentUser, onLeave })
   useEffect(() => {
     if (!socket) return;
 
+    // When a new peer joins, the initiator creates a WebRTC offer and sends it.
     const handlePeerJoined = async ({ socketId, userName }) => {
       const pc = createPeerConnection(socketId);
       try {
@@ -122,6 +132,7 @@ export default function VideoRoom({ socket, workspaceId, currentUser, onLeave })
       }
     };
 
+    // When receiving an offer, set it as remote description and create an answer.
     const handleOffer = async ({ sender, sdp }) => {
       const pc = createPeerConnection(sender);
       try {
@@ -138,6 +149,7 @@ export default function VideoRoom({ socket, workspaceId, currentUser, onLeave })
       }
     };
 
+    // When receiving an answer, finish the handshake by setting the remote description.
     const handleAnswer = async ({ sender, sdp }) => {
       const pc = peerConnectionsRef.current[sender];
       if (pc) {

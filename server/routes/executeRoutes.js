@@ -6,6 +6,13 @@ const fs = require('fs');
 
 const router = express.Router();
 
+/**
+ * Remote Code Execution Routes.
+ * Safely executes user-submitted code in temporary environments.
+ * Supports JavaScript, TypeScript, and Python.
+ * Configured with a strict 5000ms timeout.
+ */
+
 const SUPPORTED_RUNNERS = {
   javascript: { ext: 'js',  buildCmd: (f) => `node "${f}"` },
   typescript: { ext: 'ts',  buildCmd: (f) => `node "${f}"` },
@@ -20,6 +27,10 @@ const resolvePythonCmd = (filePath) => {
   });
 };
 
+/**
+ * Runs a single code test case by spawning a child process.
+ * Injects input via stdin and captures stdout/stderr.
+ */
 const runSingleTest = (cmd, inputStr, timeoutMs) => {
   return new Promise((resolve) => {
     const startTime = Date.now();
@@ -53,6 +64,10 @@ const runSingleTest = (cmd, inputStr, timeoutMs) => {
   });
 };
 
+/**
+ * General Code Execution Route.
+ * Takes arbitrary code, writes it to a temp file, runs it, and returns the output.
+ */
 router.post('/', async (req, res) => {
   const { language, code } = req.body;
 
@@ -105,6 +120,10 @@ router.post('/', async (req, res) => {
   });
 });
 
+/**
+ * Algorithmic Arena / Test Suite Route.
+ * Runs the submitted code against a list of specific input/expected-output test cases.
+ */
 router.post('/test-suite', async (req, res) => {
   const { code, language, testCases } = req.body;
 

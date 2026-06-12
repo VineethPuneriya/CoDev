@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * AI Copilot Route.
+ * Receives the user's prompt and current editor context, 
+ * then generates a response using a configured LLM.
+ */
 router.post('/:id/ai/chat', async (req, res) => {
   try {
     const { prompt, fileContext } = req.body;

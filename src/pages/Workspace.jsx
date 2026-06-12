@@ -46,6 +46,13 @@ const roleBadgeColors = {
   Collaborator: 'bg-blue-500/10 text-blue-400 border-blue-500/20'
 };
 
+/**
+ * Main Workspace Component.
+ * Acts as the primary IDE environment. Orchestrates multiple sub-systems:
+ * - Monaco Editor with Yjs for real-time collaborative editing.
+ * - Socket.IO for chat, live cursors, and general events.
+ * - Project management (files, issues, git, AI copilot, WebRTC video).
+ */
 export default function Workspace() {
   const navigate = useNavigate();
   const { id: workspaceId } = useParams();
@@ -323,6 +330,10 @@ export default function Workspace() {
     }
   }, [myRole, fetchPendingRoleRequests]);
 
+  /**
+   * Initializes the Socket.IO connection for real-time updates.
+   * Listens for Yjs editor updates and workspace chat messages.
+   */
   useEffect(() => {
     const socket = io('http://localhost:5000');
     socketRef.current = socket;
@@ -363,6 +374,10 @@ export default function Workspace() {
     }
   }, []);
 
+  /**
+   * Binds the Monaco Editor model to a Yjs document for real-time collaboration.
+   * This allows multiple users to edit the same file simultaneously and see each other's changes.
+   */
   const setupBinding = useCallback((fileId, fileName) => {
     if (!fileId || !editorRef.current || !monacoInstance) return;
 

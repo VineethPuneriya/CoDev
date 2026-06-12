@@ -10,6 +10,12 @@ const prisma = new PrismaClient({ adapter });
 
 const router = express.Router();
 
+/**
+ * Project and Workspace Management Routes.
+ * Handles the creation of projects, file structures, team member roles, 
+ * issues tracking, and workspace invitations.
+ */
+
 const verifyJwt = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -27,6 +33,10 @@ const verifyJwt = (req, res, next) => {
 
 router.use(verifyJwt);
 
+/**
+ * Create Project Route.
+ * Initializes a new project and sets the creator as the 'Admin'.
+ */
 router.post('/create', async (req, res) => {
   try {
     const { name } = req.body;
@@ -131,6 +141,11 @@ router.post('/invitations/:invitationId/respond', async (req, res) => {
   }
 });
 
+/**
+ * Fetch File Tree Route.
+ * Retrieves all files for a given project and constructs a nested hierarchy
+ * to be rendered by the frontend FileTree component.
+ */
 router.get('/:id/files', async (req, res) => {
   try {
     const { id } = req.params;

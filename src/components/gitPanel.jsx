@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, GitCommit, GitPullRequest, GitMerge, RefreshCw, CheckCircle2, ShieldAlert, Clock } from 'lucide-react';
 
+/**
+ * Git Panel Component.
+ * Interfaces with the backend git routes to fetch working tree status, commit logs,
+ * and pull requests. Provides UI for creating and managing PRs.
+ */
 export default function GitPanel({ isOpen, onClose, projectId, token, isAdmin }) {
   const [activeTab, setActiveTab] = useState('staging'); // 'staging', 'logs'
   const [files, setFiles] = useState([]);
@@ -13,6 +18,10 @@ export default function GitPanel({ isOpen, onClose, projectId, token, isAdmin })
   const [statusMessage, setStatusMessage] = useState(null);
   const [isError, setIsError] = useState(false);
 
+  /**
+   * Fetches Git status, logs, and active pull requests simultaneously
+   * to populate the staging and commit history tabs.
+   */
   const fetchData = async () => {
     setLoading(true);
     setStatusMessage(null);
@@ -45,6 +54,11 @@ export default function GitPanel({ isOpen, onClose, projectId, token, isAdmin })
     }
   }, [isOpen, projectId]);
 
+  /**
+   * Submits a new Pull Request.
+   * This signals the backend to stage all modified/untracked files, commit them,
+   * and create a logical Pull Request record in the database.
+   */
   const handleCreatePR = async () => {
     if (!title.trim()) return;
     setActionLoading(true);

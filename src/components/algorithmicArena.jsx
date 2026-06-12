@@ -3,6 +3,16 @@ import { Plus, Trash2, Play, CheckCircle2, XCircle, Loader2, FlaskConical, Clock
 
 const defaultTestCase = () => ({ id: Date.now() + Math.random(), input: '', expectedOutput: '' });
 
+/**
+ * Algorithmic Arena Component.
+ * Provides a UI for users to define test cases (stdin and expected stdout) and run
+ * their current code against them using the backend execution service.
+ *
+ * @param {Function} getCode - Function to retrieve the current editor's source code.
+ * @param {string} language - The programming language of the code (e.g., 'python', 'javascript').
+ * @param {string} workspaceId - The unique ID of the workspace.
+ * @param {string} token - The authentication token.
+ */
 export default function AlgorithmicArena({ getCode, language, workspaceId, token }) {
   const [testCases, setTestCases] = useState([defaultTestCase()]);
   const [results, setResults] = useState(null);
@@ -22,6 +32,11 @@ export default function AlgorithmicArena({ getCode, language, workspaceId, token
     setTestCases(prev => prev.map(tc => tc.id === id ? { ...tc, [field]: value } : tc));
   }, []);
 
+  /**
+   * Executes the code against all valid test cases.
+   * Sends the current editor code and test definitions to the backend test suite endpoint.
+   * It handles validation, updates the execution state, and processes the results.
+   */
   const runAllTests = useCallback(async () => {
     const code = getCode();
     if (!code || !code.trim()) {
@@ -39,6 +54,7 @@ export default function AlgorithmicArena({ getCode, language, workspaceId, token
     setError(null);
 
     try {
+      // Send the code and formatted test cases to the execution API
       const res = await fetch('http://localhost:5000/api/execute/test-suite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -144,6 +160,11 @@ export default function AlgorithmicArena({ getCode, language, workspaceId, token
   );
 }
 
+/**
+ * Renders an individual test case row within the Algorithmic Arena.
+ * Displays the test inputs, expected output, and highlights the actual output
+ * if the test fails. It also shows execution timing and status.
+ */
 function TestCaseRow({ index, tc, result, onUpdate, onRemove, canRemove }) {
   const passed = result?.passed;
   const hasPassed = result !== null && passed === true;

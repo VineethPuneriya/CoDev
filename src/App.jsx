@@ -3,6 +3,13 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Workspace from './pages/Workspace';
 
+/**
+ * Main application component.
+ * Sets up the routing context and defines the primary application routes:
+ * - /login: Authentication page
+ * - /dashboard: User dashboard to manage projects
+ * - /workspace/:id: The collaborative code editor workspace
+ */
 function App() {
   return (
     <Router>

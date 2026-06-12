@@ -1,28 +1,46 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 
+/**
+ * AI Copilot Panel Component.
+ * Provides a conversational interface where users can ask questions about their code.
+ * It automatically fetches the current editor content and passes it to the AI backend
+ * to provide context-aware responses.
+ *
+ * @param {string} workspaceId - The unique identifier of the current workspace.
+ * @param {string} token - The authentication token to access the AI backend.
+ * @param {Function} getEditorContent - Function that returns the current text inside the active code editor.
+ */
 export default function AiCopilotPanel({ workspaceId, token, getEditorContent }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef(null);
 
+  // Automatically scroll to the bottom of the chat when new messages arrive.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  /**
+   * Handles sending the user's prompt to the AI backend.
+   * Retrieves the latest code context, sends the request, and appends the AI's response to the chat log.
+   */
   const handleSend = async () => {
     const text = input.trim();
     if (!text) return;
 
+    // Append the user's message immediately for a responsive UI.
     const userMsg = { id: Date.now().toString(), sender: 'user', text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
 
+    // Retrieve the active file context so the AI knows what code the user is asking about.
     const fileContext = getEditorContent();
 
     try {
+      // POST the prompt and file context to the AI endpoint.
       const response = await fetch(`http://localhost:5000/projects/${workspaceId}/ai/chat`, {
         method: 'POST',
         headers: {
@@ -33,9 +51,11 @@ export default function AiCopilotPanel({ workspaceId, token, getEditorContent })
       });
       const data = await response.json();
       
+      // Append the AI's response back to the chat.
       const botMsg = { id: (Date.now() + 1).toString(), sender: 'bot', text: data.response || 'No response.' };
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
+      // Gracefully handle backend errors by displaying them in the chat.
       const errorMsg = { id: (Date.now() + 1).toString(), sender: 'bot', text: `Error: ${error.message}` };
       setMessages(prev => [...prev, errorMsg]);
     } finally {

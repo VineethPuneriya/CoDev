@@ -5,6 +5,10 @@ import { Terminal, Loader2 } from 'lucide-react';
 const TOKEN_KEY = 'codev_token';
 const USER_KEY = 'codev_user';
 
+/**
+ * Login Component.
+ * Handles user authentication (login and registration) and token management.
+ */
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -22,7 +26,10 @@ export default function Login() {
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-
+  /**
+   * Submits the login credentials to the backend.
+   * Stores the JWT token and user details in localStorage upon success.
+   */
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -48,6 +55,10 @@ export default function Login() {
     }
   };
 
+  /**
+   * Registers a new user.
+   * Auto-logs in the user and redirects to the dashboard upon successful registration.
+   */
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');

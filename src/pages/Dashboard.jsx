@@ -8,6 +8,11 @@ import {
 const TOKEN_KEY = 'codev_token';
 const USER_KEY = 'codev_user';
 
+/**
+ * Dashboard Component.
+ * Acts as the main hub after login. Displays a user's workspaces/projects, 
+ * handles project creation, and manages incoming workspace invitations.
+ */
 export default function Dashboard() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
@@ -24,6 +29,9 @@ export default function Dashboard() {
   const token = localStorage.getItem(TOKEN_KEY) || '';
   const user = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
 
+  /**
+   * Fetches all projects the current user is a member of.
+   */
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
@@ -78,6 +86,10 @@ export default function Dashboard() {
     setRespondingId(null);
   };
 
+  /**
+   * Creates a new workspace project.
+   * On success, refreshes the project list.
+   */
   const handleCreateProject = async () => {
     const name = newProjectName.trim();
     if (!name) return;

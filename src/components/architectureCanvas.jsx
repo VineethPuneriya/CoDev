@@ -5,6 +5,11 @@ import { useEffect, useState, useRef } from 'react';
 
 import { Maximize2, Minimize2, X } from 'lucide-react';
 
+/**
+ * Architecture Canvas Component.
+ * Embeds an Excalidraw whiteboard for architectural diagramming.
+ * Uses Yjs to synchronize drawing state in real-time between connected peers via WebSockets.
+ */
 export default function ArchitectureCanvas({ workspaceId, socket, isFloating, onPopOut, onClose, onDragStart, theme }) {
   const ydocRef = useRef(new Y.Doc());
   const ymapRef = useRef(ydocRef.current.getMap('excalidraw'));
@@ -14,6 +19,7 @@ export default function ArchitectureCanvas({ workspaceId, socket, isFloating, on
   useEffect(() => {
     const ydoc = ydocRef.current;
     
+    // Listen for local changes to the Yjs document and broadcast them via WebSockets
     const handleLocalUpdate = (update) => {
       if (socket) {
         socket.emit('canvas-update', { workspaceId, update: Array.from(update) });
@@ -21,6 +27,7 @@ export default function ArchitectureCanvas({ workspaceId, socket, isFloating, on
     };
     ydoc.on('update', handleLocalUpdate);
 
+    // Listen for remote updates from other peers and apply them to the local Yjs document
     const handleRemoteUpdate = (update) => {
       if (update) {
         Y.applyUpdate(ydoc, new Uint8Array(update));
@@ -30,6 +37,7 @@ export default function ArchitectureCanvas({ workspaceId, socket, isFloating, on
       socket.on('canvas-update', handleRemoteUpdate);
     }
 
+    // Observe changes in the Yjs map and update the Excalidraw instance accordingly
     const observeHandler = () => {
       if (!excalidrawAPI || isUpdatingRef.current) return;
       const elementsStr = ymapRef.current.get('elements');

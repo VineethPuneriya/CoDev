@@ -5,6 +5,12 @@ const prisma = require('../db');
 
 const router = express.Router();
 
+/**
+ * Authentication Routes.
+ * Handles user registration, login, password hashing (bcrypt), 
+ * and issues JWT tokens for session management.
+ */
+
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
@@ -28,6 +34,11 @@ router.post('/register', async (req, res) => {
   }
 });
 
+/**
+ * Login Route.
+ * Verifies credentials against the hashed password in the DB.
+ * Returns a JWT token valid for 1 hour.
+ */
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;

@@ -8,6 +8,10 @@ import {
   FileVideo, FileAudio, FileArchive, Cpu, GitBranch
 } from 'lucide-react';
 
+/**
+ * Maps file extensions to programming languages, specific Lucide icons,
+ * and Tailwind text colors for visual differentiation in the file tree.
+ */
 const fileContextMap = {
   js:     { language: 'javascript',  Icon: FileCode2,   color: 'text-yellow-400' },
   jsx:    { language: 'javascript',  Icon: FileCode2,   color: 'text-cyan-400'   },
@@ -63,6 +67,11 @@ export const getFileContext = (fileName) => {
   return fileContextMap[ext] || defaultContext;
 };
 
+/**
+ * FileNode Component.
+ * A recursive component representing a single file or directory in the tree.
+ * Handles renaming, deleting, and triggering creation of nested children.
+ */
 function FileNode({ node, workspaceId, token, activeFileId, onFileClick, onRefresh }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showInput, setShowInput] = useState(null);
@@ -73,6 +82,9 @@ function FileNode({ node, workspaceId, token, activeFileId, onFileClick, onRefre
   const isFolder = node.type === 'folder';
   const { Icon, color } = getFileContext(node.name);
 
+  /**
+   * Submits a request to the backend to create a new file or folder within this directory.
+   */
   const handleCreate = async (type) => {
     const name = inputValue.trim();
     if (!name) return;
@@ -193,6 +205,11 @@ function FileNode({ node, workspaceId, token, activeFileId, onFileClick, onRefre
   );
 }
 
+/**
+ * FileTree Component.
+ * The main container for the workspace's file explorer. Displays the root-level
+ * files and directories, and provides UI for creating new root items.
+ */
 export default function FileTree({ files, workspaceId, token, activeFileId, onFileClick, onRefresh }) {
   const [showRootInput, setShowRootInput] = useState(null);
   const [rootInputValue, setRootInputValue] = useState('');

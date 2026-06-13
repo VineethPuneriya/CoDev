@@ -233,6 +233,35 @@ router.get('/:id/members', async (req, res) => {
   }
 });
 
+router.delete('/:id/members/:memberId', async (req, res) => {
+  try {
+    const { id, memberId } = req.params;
+    const userId = req.userId;
+
+    const adminMember = await prisma.projectMember.findFirst({
+      where: { projectId: id, userId, roleName: 'Admin' }
+    });
+    if (!adminMember) {
+      return res.status(403).json({ error: 'Only the project Admin can remove members.' });
+    }
+
+    const targetMember = await prisma.projectMember.findUnique({
+      where: { id: memberId }
+    });
+    if (!targetMember || targetMember.projectId !== id) {
+      return res.status(404).json({ error: 'Member not found in this project.' });
+    }
+    if (targetMember.userId === userId) {
+      return res.status(400).json({ error: 'You cannot remove yourself from the project.' });
+    }
+
+    await prisma.projectMember.delete({ where: { id: memberId } });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Server error' });
+  }
+});
+
 router.post('/:id/invite', async (req, res) => {
   try {
     const { id } = req.params;

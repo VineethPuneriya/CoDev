@@ -16,7 +16,7 @@ import AiCopilotPanel from '../components/aiCopilotPanel';
 import {
   Users, Circle, ArrowLeft, GitCommit, Plus,
   MessageSquare, AlertCircle, Play, Code2, CheckCircle2,
-  TrendingUp, Crown, Shield, Loader2, CheckCircle, XCircle, Phone, PenTool, Sparkles, Palette
+  TrendingUp, Crown, Shield, Loader2, CheckCircle, XCircle, Phone, PenTool, Sparkles, Palette, X
 } from 'lucide-react';
 
 const TOKEN_KEY = 'codev_token';
@@ -118,6 +118,10 @@ export default function Workspace() {
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [activeTheme, setActiveTheme] = useState('dark');
   const [showThemeMenu, setShowThemeMenu] = useState(false);
+
+  const [rightPanelWidth, setRightPanelWidth] = useState(280);
+  const [isDraggingRightDivider, setIsDraggingRightDivider] = useState(false);
+  const rightDividerStartRef = useRef({ x: 0, startWidth: 0 });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', activeTheme);
@@ -321,6 +325,15 @@ export default function Workspace() {
     fetchMembers();
     fetchMyRoleRequest();
   }, [fetchFiles, fetchIssues, fetchMembers, fetchMyRoleRequest]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchFiles();
+      fetchMembers();
+      fetchIssues();
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, [fetchFiles, fetchMembers, fetchIssues]);
 
   useEffect(() => {
     if (myRole === 'Admin') {
@@ -579,6 +592,42 @@ export default function Workspace() {
     navigate('/login', { replace: true });
   };
 
+  const handleRemoveMember = async (memberId) => {
+    try {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/members/${memberId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        await fetchMembers();
+      }
+    } catch (_) {}
+  };
+
+  const handleRightDividerMouseDown = (e) => {
+    e.preventDefault();
+    setIsDraggingRightDivider(true);
+    rightDividerStartRef.current = { x: e.clientX, startWidth: rightPanelWidth };
+  };
+
+  useEffect(() => {
+    if (!isDraggingRightDivider) return;
+    const handleMouseMove = (e) => {
+      const dx = rightDividerStartRef.current.x - e.clientX;
+      const newWidth = Math.max(200, Math.min(600, rightDividerStartRef.current.startWidth + dx));
+      setRightPanelWidth(newWidth);
+    };
+    const handleMouseUp = () => {
+      setIsDraggingRightDivider(false);
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingRightDivider]);
+
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)] transition-colors duration-300">
       <InviteModal
@@ -773,7 +822,7 @@ export default function Workspace() {
           />
         </aside>
 
-        <main ref={mainRef} className="flex-1 flex flex-col bg-[var(--bg-base)] min-h-0 transition-colors duration-300" style={{ cursor: isDraggingDivider ? 'row-resize' : isDraggingCanvasDivider ? 'col-resize' : 'default', userSelect: (isDraggingDivider || isDraggingCanvasDivider) ? 'none' : 'auto' }}>
+        <main ref={mainRef} className="flex-1 flex flex-col bg-[var(--bg-base)] min-h-0 transition-colors duration-300" style={{ cursor: isDraggingDivider ? 'row-resize' : isDraggingCanvasDivider ? 'col-resize' : isDraggingRightDivider ? 'col-resize' : 'default', userSelect: (isDraggingDivider || isDraggingCanvasDivider || isDraggingRightDivider) ? 'none' : 'auto' }}>
           <div className="flex items-center px-4 h-10 bg-[var(--bg-elevated)] border-b border-[var(--border-color)] shrink-0 transition-colors duration-300">
             {currentFileId ? (
               <div className="flex items-center space-x-2 px-3 py-1 bg-[#1e1e1e] text-indigo-300 text-sm border-t-2 border-indigo-500">
@@ -867,7 +916,17 @@ export default function Workspace() {
           </div>
         )}
 
-        <aside className="w-1/5 min-w-[280px] border-l border-[var(--border-color)] bg-[var(--bg-overlay)] flex flex-col overflow-y-auto transition-colors duration-300">
+        <div
+          onMouseDown={handleRightDividerMouseDown}
+          style={{ width: '6px', cursor: 'col-resize', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, zIndex: 20 }}
+        >
+          <div
+            style={{ height: '100%', width: isDraggingRightDivider ? '4px' : '2px', background: isDraggingRightDivider ? '#818cf8' : 'transparent', transition: 'all 0.15s ease', borderRadius: '2px' }}
+            onMouseEnter={(e) => { e.currentTarget.style.width = '4px'; e.currentTarget.style.background = '#818cf8'; }}
+            onMouseLeave={(e) => { if (!isDraggingRightDivider) { e.currentTarget.style.width = '2px'; e.currentTarget.style.background = 'transparent'; } }}
+          />
+        </div>
+        <aside style={{ width: `${rightPanelWidth}px`, flexShrink: 0 }} className="border-l border-[var(--border-color)] bg-[var(--bg-overlay)] flex flex-col overflow-y-auto transition-colors duration-300">
           <div className="p-4 border-b border-[var(--border-color)] shrink-0 transition-colors duration-300">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-[var(--text-secondary)] flex items-center uppercase tracking-wider">
@@ -890,8 +949,8 @@ export default function Workspace() {
               ) : (
                 members.map(member => (
                   <div key={member.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--bg-dropdown)] transition-colors">
-                    <div className="flex items-center space-x-2.5">
-                      <div className="relative">
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <div className="relative shrink-0">
                         <div className="w-7 h-7 rounded-full bg-[var(--bg-dropdown)] flex items-center justify-center text-xs font-bold text-[var(--text-primary)] border border-[var(--border-color)]">
                           {member.name.charAt(0).toUpperCase()}
                         </div>
@@ -908,9 +967,20 @@ export default function Workspace() {
                         </span>
                       </div>
                     </div>
-                    {member.role === 'Admin' && (
-                      <Crown className="w-3 h-3 text-amber-400 shrink-0" />
-                    )}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {member.role === 'Admin' && (
+                        <Crown className="w-3 h-3 text-amber-400" />
+                      )}
+                      {isAdmin && member.role !== 'Admin' && (
+                        <button
+                          onClick={() => handleRemoveMember(member.id)}
+                          title="Remove member"
+                          className="p-1 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))
               )}

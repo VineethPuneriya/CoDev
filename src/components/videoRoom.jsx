@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Mic, MicOff, Video, VideoOff, Monitor, PhoneOff, GripHorizontal } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Monitor, PhoneOff, GripHorizontal, Maximize2, Minimize2 } from 'lucide-react';
 
 const ICE_SERVERS = {
   iceServers: [
@@ -25,6 +25,7 @@ export default function VideoRoom({ socket, workspaceId, currentUser, onLeave })
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [position, setPosition] = useState({ top: 80, left: window.innerWidth - 420 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   /**
    * Initializes a new RTCPeerConnection for a remote peer.
@@ -214,8 +215,35 @@ export default function VideoRoom({ socket, workspaceId, currentUser, onLeave })
       localStreamRef.current = null;
     }
     setRemoteStreams({});
+    setIsMuted(false);
+    setIsCameraOff(false);
+    setIsScreenSharing(false);
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    setIsFullscreen(false);
     if (onLeave) onLeave();
   }, [socket, workspaceId, onLeave]);
+
+  const toggleFullscreen = useCallback(() => {
+    const el = document.getElementById('video-room-overlay');
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   const toggleMute = useCallback(() => {
     if (!localStreamRef.current) return;
@@ -444,6 +472,16 @@ export default function VideoRoom({ socket, workspaceId, currentUser, onLeave })
           title={isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
         >
           <Monitor style={{ width: '16px', height: '16px' }} />
+        </ControlButton>
+
+        <ControlButton
+          id="btn-fullscreen"
+          active={isFullscreen}
+          activeColor="#6366f1"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+        >
+          {isFullscreen ? <Minimize2 style={{ width: '16px', height: '16px' }} /> : <Maximize2 style={{ width: '16px', height: '16px' }} />}
         </ControlButton>
 
         <ControlButton

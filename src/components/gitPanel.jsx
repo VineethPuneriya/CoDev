@@ -18,6 +18,9 @@ export default function GitPanel({ isOpen, onClose, projectId, token, isAdmin })
   const [statusMessage, setStatusMessage] = useState(null);
   const [isError, setIsError] = useState(false);
 
+  // Dynamic backend URL for production APIs
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
   /**
    * Fetches Git status, logs, and active pull requests simultaneously
    * to populate the staging and commit history tabs.
@@ -27,9 +30,9 @@ export default function GitPanel({ isOpen, onClose, projectId, token, isAdmin })
     setStatusMessage(null);
     try {
       const [statusRes, logsRes, prsRes] = await Promise.all([
-        fetch(`http://localhost:5000/projects/${projectId}/git/status`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`http://localhost:5000/projects/${projectId}/git/logs`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`http://localhost:5000/projects/${projectId}/git/pull-requests`, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${backendUrl}/projects/${projectId}/git/status`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${backendUrl}/projects/${projectId}/git/logs`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${backendUrl}/projects/${projectId}/git/pull-requests`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       const statusData = await statusRes.json();
       const logsData = await logsRes.json();
@@ -64,7 +67,7 @@ export default function GitPanel({ isOpen, onClose, projectId, token, isAdmin })
     setActionLoading(true);
     setStatusMessage(null);
     try {
-      const response = await fetch(`http://localhost:5000/projects/${projectId}/git/pull-requests`, {
+      const response = await fetch(`${backendUrl}/projects/${projectId}/git/pull-requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title, description: '' })
@@ -87,7 +90,7 @@ export default function GitPanel({ isOpen, onClose, projectId, token, isAdmin })
     setActionLoading(true);
     setStatusMessage(null);
     try {
-      const response = await fetch(`http://localhost:5000/projects/${projectId}/git/pull-requests/${prId}`, {
+      const response = await fetch(`${backendUrl}/projects/${projectId}/git/pull-requests/${prId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status })

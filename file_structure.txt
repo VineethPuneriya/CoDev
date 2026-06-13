@@ -1,0 +1,59 @@
+.
+├── public
+│   ├── favicon.svg
+│   └── icons.svg
+├── server
+│   ├── prisma
+│   │   └── schema.prisma
+│   ├── routes
+│   │   ├── aiRoutes.js
+│   │   ├── authRoutes.js
+│   │   ├── executeRoutes.js
+│   │   ├── gitRoutes.js
+│   │   └── projectRoutes.js
+│   ├── scripts
+│   │   └── wipeAndSeed.js
+│   ├── .gitignore
+│   ├── db.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── prisma.config.ts
+│   └── server.js
+├── src
+│   ├── assets
+│   │   ├── hero.png
+│   │   ├── react.svg
+│   │   └── vite.svg
+│   ├── components
+│   │   ├── aiCopilotPanel.jsx
+│   │   ├── algorithmicArena.jsx
+│   │   ├── architectureCanvas.jsx
+│   │   ├── consolePanel.jsx
+│   │   ├── fileTree.jsx
+│   │   ├── gitPanel.jsx
+│   │   ├── inviteModal.jsx
+│   │   └── videoRoom.jsx
+│   ├── lib
+│   │   └── supabaseClient.js
+│   ├── pages
+│   │   ├── Dashboard.jsx
+│   │   ├── Login.jsx
+│   │   └── Workspace.jsx
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   ├── main.jsx
+│   └── mockData.js
+├── .env
+├── .gitignore
+├── create_structure.cjs
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── passwordsReference.txt
+├── postcss.config.js
+├── PRD.md
+├── README.md
+├── tailwind.config.js
+└── vite.config.js

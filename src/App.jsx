@@ -37,7 +37,9 @@ function App() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/auth/token-exchange', {
+      // Use environment variable for backend URL to support production deployments while falling back to local dev server
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      const res = await fetch(`${backendUrl}/auth/token-exchange`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

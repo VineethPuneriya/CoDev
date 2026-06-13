@@ -16,14 +16,21 @@ const aiRoutes = require('./routes/aiRoutes');
 const app = express();
 const httpServer = http.createServer(app);
 
+// Setup dynamic allowed origins for production UI (Vercel) and local dev
+const allowedOrigins = ['http://localhost:5173', process.env.FRONTEND_URL].filter(Boolean);
+
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
+    credentials: true, // Required to maintain session persistence over WebSockets
   },
 });
 
-app.use(cors());
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use('/auth', authRoutes);

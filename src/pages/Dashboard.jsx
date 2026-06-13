@@ -30,13 +30,16 @@ export default function Dashboard() {
   const token = localStorage.getItem(TOKEN_KEY) || '';
   const user = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
 
+  // Dynamically resolve backend URL for production APIs with local fallback
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
   /**
    * Fetches all projects the current user is a member of.
    */
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/projects/my-projects', {
+      const res = await fetch(`${backendUrl}/projects/my-projects`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -51,7 +54,7 @@ export default function Dashboard() {
   const fetchInvitations = useCallback(async () => {
     setInvitationsLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/projects/invitations', {
+      const res = await fetch(`${backendUrl}/projects/invitations`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -72,7 +75,7 @@ export default function Dashboard() {
   const handleRespond = async (invitationId, status) => {
     setRespondingId(invitationId);
     try {
-      const res = await fetch(`http://localhost:5000/projects/invitations/${invitationId}/respond`, {
+      const res = await fetch(`${backendUrl}/projects/invitations/${invitationId}/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status })
@@ -96,7 +99,7 @@ export default function Dashboard() {
     if (!name) return;
     setCreating(true);
     try {
-      const res = await fetch('http://localhost:5000/projects/create', {
+      const res = await fetch(`${backendUrl}/projects/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name })

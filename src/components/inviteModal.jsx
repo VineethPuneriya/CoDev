@@ -38,7 +38,9 @@ export default function InviteModal({ isOpen, onClose, workspaceId, token }) {
     setStatus(null);
     setMessage('');
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/invite`, {
+      // Dynamic backend URL for production support
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/invite`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

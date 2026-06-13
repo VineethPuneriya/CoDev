@@ -54,8 +54,9 @@ export default function AlgorithmicArena({ getCode, language, workspaceId, token
     setError(null);
 
     try {
-      // Send the code and formatted test cases to the execution API
-      const res = await fetch('http://localhost:5000/api/execute/test-suite', {
+      // Use dynamic backend URL for prod compatibility
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      const res = await fetch(`${backendUrl}/api/execute/test-suite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

@@ -22,6 +22,10 @@ import {
 const TOKEN_KEY = 'codev_token';
 const USER_KEY = 'codev_user';
 
+// Use environment variable for backend URL to support production deployments (Render) 
+// while falling back to local dev server
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
 const findInTree = (nodes, id) => {
   for (const node of nodes) {
     if (node.id === id) return node;
@@ -156,7 +160,7 @@ export default function Workspace() {
     if (currentFileId && editorRef.current) {
       const content = editorRef.current.getValue();
       try {
-        await fetch(`http://localhost:5000/projects/${workspaceId}/files/${currentFileId}`, {
+        await fetch(`${backendUrl}/projects/${workspaceId}/files/${currentFileId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ content })
@@ -256,7 +260,7 @@ export default function Workspace() {
   const fetchFiles = useCallback(async () => {
     if (!workspaceId) return;
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/files`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/files`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -267,7 +271,7 @@ export default function Workspace() {
   const fetchIssues = useCallback(async () => {
     if (!workspaceId) return;
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/issues`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/issues`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -278,7 +282,7 @@ export default function Workspace() {
   const fetchMembers = useCallback(async () => {
     if (!workspaceId) return;
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/members`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/members`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -292,7 +296,7 @@ export default function Workspace() {
   const fetchMyRoleRequest = useCallback(async () => {
     if (!workspaceId) return;
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/my-role-request`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/my-role-request`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -303,7 +307,7 @@ export default function Workspace() {
   const fetchPendingRoleRequests = useCallback(async () => {
     if (!workspaceId || myRole !== 'Admin') return;
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/role-requests`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/role-requests`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -329,7 +333,8 @@ export default function Workspace() {
    * Listens for Yjs editor updates and workspace chat messages.
    */
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    // Inject backendUrl dynamically for WebSocket connection and maintain withCredentials config
+    const socket = io(backendUrl, { withCredentials: true });
     socketRef.current = socket;
 
     socket.on('connect', () => {
@@ -446,7 +451,7 @@ export default function Workspace() {
     setConsoleOutput(null);
     setConsoleIsError(false);
     try {
-      const res = await fetch('http://localhost:5000/api/execute', {
+      const res = await fetch(`${backendUrl}/api/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ language: detectedLanguage, code }),
@@ -467,7 +472,7 @@ export default function Workspace() {
     if (!title) return;
     setIsCreatingIssue(true);
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/issues`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/issues`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title })
@@ -485,7 +490,7 @@ export default function Workspace() {
   const handleToggleIssueStatus = async (issue) => {
     const newStatus = issue.status === 'open' ? 'closed' : 'open';
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/issues/${issue.id}`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/issues/${issue.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: newStatus })
@@ -523,7 +528,7 @@ export default function Workspace() {
     setRoleRequestLoading(true);
     setRoleRequestError('');
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/role-requests`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/role-requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ requestedRole: selectedUpgradeRole })
@@ -544,7 +549,7 @@ export default function Workspace() {
   const handleRespondToRoleRequest = async (requestId, status) => {
     setRespondingRequestId(requestId);
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/role-requests/${requestId}`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/role-requests/${requestId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status })

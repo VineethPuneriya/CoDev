@@ -67,6 +67,9 @@ export const getFileContext = (fileName) => {
   return fileContextMap[ext] || defaultContext;
 };
 
+// Dynamic backend URL for production APIs
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
 /**
  * FileNode Component.
  * A recursive component representing a single file or directory in the tree.
@@ -91,7 +94,7 @@ function FileNode({ node, workspaceId, token, activeFileId, onFileClick, onRefre
     isCommittingRef.current = true;
     setError('');
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/files`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/files`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, type, parentId: node.id })
@@ -121,7 +124,7 @@ function FileNode({ node, workspaceId, token, activeFileId, onFileClick, onRefre
 
   const handleDelete = async (e) => {
     e.stopPropagation();
-    await fetch(`http://localhost:5000/projects/${workspaceId}/files/${node.id}`, {
+    await fetch(`${backendUrl}/projects/${workspaceId}/files/${node.id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -222,7 +225,7 @@ export default function FileTree({ files, workspaceId, token, activeFileId, onFi
     isCommittingRootRef.current = true;
     setRootError('');
     try {
-      const res = await fetch(`http://localhost:5000/projects/${workspaceId}/files`, {
+      const res = await fetch(`${backendUrl}/projects/${workspaceId}/files`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, type, parentId: null })

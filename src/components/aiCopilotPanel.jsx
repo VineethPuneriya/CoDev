@@ -40,8 +40,9 @@ export default function AiCopilotPanel({ workspaceId, token, getEditorContent })
     const fileContext = getEditorContent();
 
     try {
-      // POST the prompt and file context to the AI endpoint.
-      const response = await fetch(`http://localhost:5000/projects/${workspaceId}/ai/chat`, {
+      // Dynamic backend URL to support Vercel/Render deployments
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      const response = await fetch(`${backendUrl}/projects/${workspaceId}/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

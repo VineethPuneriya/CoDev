@@ -4,6 +4,7 @@ import { io } from 'socket.io-client';
 import Editor, { useMonaco } from '@monaco-editor/react';
 import * as Y from 'yjs';
 import { MonacoBinding } from 'y-monaco';
+import supabase from '../lib/supabaseClient';
 import FileTree, { getFileContext } from '../components/fileTree';
 import ConsolePanel from '../components/consolePanel';
 import InviteModal from '../components/inviteModal';
@@ -244,14 +245,7 @@ export default function Workspace() {
 
   const token = localStorage.getItem(TOKEN_KEY) || '';
   const storedUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
-  const currentUser = (() => {
-    try {
-      const p = JSON.parse(atob(token.split('.')[1]));
-      return { ...storedUser, ...p };
-    } catch {
-      return storedUser || {};
-    }
-  })();
+  const currentUser = storedUser || {};
 
   useEffect(() => {
     if (!token) {
@@ -573,27 +567,11 @@ export default function Workspace() {
   const isCollaborator = myRole === 'Collaborator';
   const hasPendingRequest = myRoleRequest?.status === 'PENDING';
 
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    document.cookie.split(";").forEach(function(c) { 
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-    });
-    setCurrentUser(null);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     navigate('/login', { replace: true });
-  };
-
-  const handleMockPayload = () => {
-    const mockMsg = {
-      id: 'mock-' + Date.now().toString(),
-      workspaceId,
-      senderId: 'mock-collab-123',
-      senderName: 'collab@codev.test',
-      text: 'Mock incoming WebSocket payload received!',
-      timestamp: new Date().toISOString(),
-      isSelf: false
-    };
-    setChatMessages(prev => [...prev, mockMsg]);
   };
 
   return (
@@ -707,9 +685,7 @@ export default function Workspace() {
           <button onClick={() => navigate('/dashboard')} className="text-slate-400 hover:text-white transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <button id="btn-mock-payload" onClick={handleMockPayload} style={{ opacity: 0.01, position: 'absolute', left: 0 }} aria-hidden="true">
-            Mock
-          </button>
+
           <div className="flex items-center space-x-2 text-slate-300">
             <Code2 className="w-5 h-5 text-indigo-400" />
             <span className="font-semibold text-sm">

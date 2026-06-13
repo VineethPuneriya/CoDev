@@ -1,15 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const prisma = require('../db');
 
 const router = express.Router();
-
-/**
- * Authentication Routes.
- * Handles user registration, login, password hashing (bcrypt), 
- * and issues JWT tokens for session management.
- */
 
 router.post('/register', async (req, res) => {
   try {
@@ -34,11 +29,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-/**
- * Login Route.
- * Verifies credentials against the hashed password in the DB.
- * Returns a JWT token valid for 1 hour.
- */
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -51,6 +41,30 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ error: 'Invalid credentials' });
+    }
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.post('/token-exchange', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      const placeholderHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: placeholderHash,
+          name: name || email.split('@')[0]
+        }
+      });
     }
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
     res.json({ token, user: { id: user.id, email: user.email, name: user.name } });

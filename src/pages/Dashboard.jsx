@@ -4,6 +4,7 @@ import {
   FolderGit2, Plus, Clock, ArrowRight, Loader2, LogOut,
   Mail, CheckCircle, XCircle, Inbox, ChevronDown, ChevronUp
 } from 'lucide-react';
+import supabase from '../lib/supabaseClient';
 
 const TOKEN_KEY = 'codev_token';
 const USER_KEY = 'codev_user';
@@ -114,7 +115,8 @@ export default function Dashboard() {
     setCreating(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     navigate('/login');

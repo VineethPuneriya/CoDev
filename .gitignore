@@ -9,8 +9,6 @@ lerna-debug.log*
 PRD.md
 
 node_modules
-dist
-dist-ssr
 *.local
 
 # Environment variables
